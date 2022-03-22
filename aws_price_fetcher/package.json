@@ -1,0 +1,8 @@
+{
+  "name": "aws-price-fetcher",
+  "version": "1.0.0",
+  "license": "ISC",
+  "dependencies": {
+    "serverless-python-requirements": "^5.4.0"
+  }
+}

@@ -1,0 +1,28 @@
+service: aws-price-fetcher
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: python3.8
+  region: us-east-1
+  deploymentBucket:
+    name: price-fetcher-serverlessdeploymentbucket
+
+functions:
+  compute:
+    handler: handler.compute
+    description: Fetches gasoline price from public API
+
+custom:
+  pythonRequirements:
+    useDownloadCache: false
+    useStaticCache: false
+    slim: true
+    slimPatternsAppendDefaults: false
+    slimPatterns:
+      - '**/*.py[c|o]'
+      - '**/__pycache__*'
+
+plugins:
+  - serverless-python-requirements

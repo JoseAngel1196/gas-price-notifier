@@ -15,3 +15,8 @@ deploy:
 .PHONY: kill
 kill:
 	serverless remove
+
+# Test locally
+.PHONY: test_local
+test_local:
+	serverless invoke -f compute --log
