@@ -1,3 +1,7 @@
-module "aws_price_fetcher" {
-  source = "./aws-price-fetcher"
+module "lambda" {
+  source = "./lambda"
+}
+
+module "dynamodb" {
+  source = "./dynamodb"
 }
