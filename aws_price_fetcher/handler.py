@@ -1,16 +1,22 @@
-from typing import Any, Dict
-from boto3.dynamodb.conditions import Key
+from typing import Any, Dict, List
 
 from dynamodb import dynamo_db_client
+
+from settings import GASOLINE_API_URL
 
 def compute(event: Dict[str, Any], _: Any) -> None:
     """
     """
-    _query('GasolinePrices')
+    items = query('GasolinePrices')
 
+    if not items:
+        pass
+        # Table is empty, we need to get the last result from API
+        
+    return None
 
-def _query(table_name: str) -> None:
+def query(table_name: str) -> List:
     table = dynamo_db_client.Table(table_name)
 
     response = table.scan()
-    print('response', response)
+    return response['Items']

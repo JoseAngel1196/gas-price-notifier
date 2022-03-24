@@ -15,7 +15,7 @@ resource "aws_s3_bucket_public_access_block" "deployment_bucket_public_policy" {
 }
 
 resource "aws_iam_role" "iam_for_lambda" {
-  name = "Price-Notifier-role"
+  name = "Price-Notifier-Role"
   assume_role_policy = jsonencode(
     {
       Statement = [
@@ -30,6 +30,26 @@ resource "aws_iam_role" "iam_for_lambda" {
       Version = "2012-10-17"
     }
   )
+}
+
+resource "aws_iam_policy" "iam_role_policy_for_lambda" {
+
+  name        = "aws_iam_policy_for_terraform_aws_lambda_role"
+  description = "AWS IAM Policy for managing aws lambda role"
+  policy = jsonencode({
+    Statement = [{
+      Action   = ["s3:GetObject"],
+      Effect   = "Allow",
+      Resource = "${aws_s3_bucket.price_fetcher_deployment.arn}"
+      },
+      {
+        Action   = ["dynamodb:Scan", "dynamodb:Query", "dynamodb:PutItem"],
+        Effect   = "Allow",
+        Resource = "${var.gasoline_prices_table_arn}"
+      }
+    ]
+    Version = "2012-10-17"
+  })
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_attach_policy" {

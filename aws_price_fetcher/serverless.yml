@@ -8,6 +8,8 @@ provider:
   region: us-east-1
   deploymentBucket:
     name: price-fetcher-serverlessdeploymentbucket
+  iam:
+    role: arn:aws:iam::008735640664:role/Price-Notifier-Role
 
 functions:
   compute:
@@ -21,8 +23,8 @@ custom:
     slim: true
     slimPatternsAppendDefaults: false
     slimPatterns:
-      - '**/*.py[c|o]'
-      - '**/__pycache__*'
+      - "**/*.py[c|o]"
+      - "**/__pycache__*"
 
 plugins:
   - serverless-python-requirements
