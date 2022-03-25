@@ -12,7 +12,7 @@ deploy:
 
 .PHONY: kill
 kill:
-	serverless remove
+	serverless remove --aws-profile developer_jhidalgo
 
 # Test locally
 .PHONY: test_local

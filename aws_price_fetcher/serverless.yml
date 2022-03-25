@@ -15,7 +15,7 @@ functions:
   compute:
     handler: handler.compute
     description: Fetches gasoline price from public API
-
+    
 custom:
   pythonRequirements:
     useDownloadCache: false
