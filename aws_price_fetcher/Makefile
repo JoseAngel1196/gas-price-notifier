@@ -17,9 +17,9 @@ kill:
 # Test locally
 .PHONY: test_local
 test_local:
-	serverless invoke -f compute --log --aws-profile developer_jhidalgo
+	serverless invoke local -f price_fetcher --aws-profile developer_jhidalgo
 
 # Invoke function
 .PHONY: invoke
 invoke:
-	serverless invoke --function compute --log --aws-profile developer_jhidalgo
+	serverless invoke -f price_fetcher --log --aws-profile developer_jhidalgo

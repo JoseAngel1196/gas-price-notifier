@@ -15,11 +15,11 @@ GASOLINE_API_URL = "https://data.ny.gov/resource/wuxr-ni2i.json"
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.INFO)
 
-def compute(event: Dict[str, Any], _: Any) -> None:
+def price_fetcher(event: Dict[str, Any], _: Any) -> None:
     """
     """
     items = query(GASOLINE_PRICE_TABLE_NAME)
-    LOG.info(f"Got items:", extra={'items': items})
+    LOG.info(f"Got items: {items}")
 
     if not items:
         # Table is empty, we need to get the last result from API
@@ -32,15 +32,20 @@ def compute(event: Dict[str, Any], _: Any) -> None:
         gasoline_api_json = gasoline_api_response.json()
 
         most_recent_gasoline_price: Dict = gasoline_api_json[0]
-        LOG.info(f"Got most recent gasoline price:", extra={'most_recent_gasoline_price': most_recent_gasoline_price})
+        LOG.info(f"Got most recent gasoline price: {most_recent_gasoline_price}")
 
         published_at = most_recent_gasoline_price['date']
         gasoline_price = most_recent_gasoline_price['new_york_state_average_gal']
 
         response = insert(GASOLINE_PRICE_TABLE_NAME, published_at=published_at, gasoline_price=gasoline_price)
-        LOG.info(f"Got response:", extra={'response': response})
+        LOG.info(f"Got response: {response}")
         
     return None
+
+def price_publisher(event: Dict[str, Any], _: Any) -> None:
+    """
+    """
+    LOG.info(f'Got event {event}')
 
 def query(table_name: str) -> List:
     """

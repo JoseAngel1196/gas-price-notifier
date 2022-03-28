@@ -38,7 +38,7 @@ resource "aws_iam_policy" "iam_role_policy_for_lambda" {
   description = "AWS IAM Policy for managing aws lambda role"
   policy = jsonencode({
     Statement = [{
-      Action   = ["s3:GetObject"],
+      Action   = ["s3:GetObject", "s3:PutObject"],
       Effect   = "Allow",
       Resource = "${aws_s3_bucket.price_fetcher_deployment.arn}"
       },
@@ -46,6 +46,16 @@ resource "aws_iam_policy" "iam_role_policy_for_lambda" {
         Action   = ["dynamodb:Scan", "dynamodb:Query", "dynamodb:PutItem"],
         Effect   = "Allow",
         Resource = "${var.gasoline_prices_table_arn}"
+      },
+      {
+        Action   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents", "logs:DescribeLogStreams", "logs:createExportTask"],
+        Effect   = "Allow",
+        Resource = "*"
+      },
+      {
+        Action   = ["dynamodb:DescribeStream", "dynamodb:GetRecords", "dynamodb:GetShardIterator", "dynamodb:ListStreams"],
+        Effect   = "Allow",
+        Resource = "${var.gasoline_price_table_stream_arn}"
       }
     ]
     Version = "2012-10-17"
