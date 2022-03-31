@@ -5,12 +5,16 @@ from requests import Response
 import requests
 import logging
 
+import boto3
+
 from dynamodb import dynamo_db_client
 
 
 GASOLINE_PRICE_TABLE_NAME = "GasolinePrices"
 
 GASOLINE_API_URL = "https://data.ny.gov/resource/wuxr-ni2i.json"
+
+SNS_ARN = "arn:aws:sns:us-east-1:008735640664:price-updates-topic"
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.INFO)
@@ -21,31 +25,49 @@ def price_fetcher(event: Dict[str, Any], _: Any) -> None:
     items = query(GASOLINE_PRICE_TABLE_NAME)
     LOG.info(f"Got items: {items}")
 
-    if not items:
-        # Table is empty, we need to get the last result from API
-        gasoline_api_response = request()
-        LOG.info(f"Got status_code: {gasoline_api_response.status_code}")
+    gasoline_api_response = request()
         
-        if gasoline_api_response.status_code != 200:
-            raise SystemError()
+    gasoline_api_json = gasoline_api_response.json()
 
-        gasoline_api_json = gasoline_api_response.json()
+    most_recent_gasoline_price: Dict = gasoline_api_json[0]
+    LOG.info(f"Got most recent gasoline price: {most_recent_gasoline_price}")
 
-        most_recent_gasoline_price: Dict = gasoline_api_json[0]
-        LOG.info(f"Got most recent gasoline price: {most_recent_gasoline_price}")
+    published_at = most_recent_gasoline_price['date']
+    gasoline_price = most_recent_gasoline_price['new_york_state_average_gal']
 
-        published_at = most_recent_gasoline_price['date']
-        gasoline_price = most_recent_gasoline_price['new_york_state_average_gal']
+    if items:
+        previous_gasoline_price = float(items[0]['newYorkStateAverageGal'])
+        LOG.info(f'Got previous previous_gasoline_price {previous_gasoline_price}')
 
-        response = insert(GASOLINE_PRICE_TABLE_NAME, published_at=published_at, gasoline_price=gasoline_price)
-        LOG.info(f"Got response: {response}")
-        
+        recent_gasoline_price = float(gasoline_price) 
+
+        price_has_dropped = recent_gasoline_price < previous_gasoline_price
+
+        if not price_has_dropped:
+            LOG.info("Skipping insertion because price hasn't dropped")
+            return
+
+    response = insert(GASOLINE_PRICE_TABLE_NAME, published_at=published_at, gasoline_price=gasoline_price)
+    LOG.info(f"Got response: {response}")
+      
     return None
 
 def price_publisher(event: Dict[str, Any], _: Any) -> None:
     """
     """
     LOG.info(f'Got event {event}')
+    record = event['Records'][0]
+    most_recent_gasoline_price = record['dynamodb']['NewImage']['newYorkStateAverageGal']['S']
+    message = f'🛡🛡🛡 Gasoline price {most_recent_gasoline_price} have fell 🛡🛡🛡'
+    subject = 'A gasoline price dropped has been detected'
+    send_sns(message, subject)
+
+
+def send_sns(message, subject):
+    client = boto3.client("sns")
+    response = client.publish(
+        TopicArn=SNS_ARN, Message=message, Subject=subject)
+    return response
 
 def query(table_name: str) -> List:
     """
@@ -70,4 +92,10 @@ def insert(table_name: str, *, published_at: str, gasoline_price: str) -> Dict:
     return response
 
 def request() -> Response:
-    return requests.get(GASOLINE_API_URL)
+    response: Response = requests.get(GASOLINE_API_URL)
+    LOG.info(f"Got status_code: {response.status_code}")
+        
+    if response.status_code != 200:
+        raise SystemError()
+
+    return response

@@ -56,6 +56,11 @@ resource "aws_iam_policy" "iam_role_policy_for_lambda" {
         Action   = ["dynamodb:DescribeStream", "dynamodb:GetRecords", "dynamodb:GetShardIterator", "dynamodb:ListStreams"],
         Effect   = "Allow",
         Resource = "${var.gasoline_price_table_stream_arn}"
+      },
+      {
+        Action = ["sns:Publish"],
+        Effect   = "Allow",
+        Resource = "${var.sns_arn}"
       }
     ]
     Version = "2012-10-17"

@@ -10,3 +10,7 @@ variable "price_publisher_arn" {
 variable "gasoline_price_table_stream_arn" {
   type = string
 }
+
+variable "sns_arn" {
+  type = string
+}
