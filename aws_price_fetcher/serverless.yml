@@ -15,11 +15,11 @@ functions:
   price_fetcher:
     handler: handler.price_fetcher
     description: Fetches gasoline price from public API
-    timeout: 30
+    events:
+      - schedule: cron(* * 0 ? * WED *)
   price_publisher:
     handler: handler.price_publisher
     description: Publish gasoline drops
-    timeout: 30
 
 custom:
   pythonRequirements:
