@@ -21,6 +21,9 @@ LOG.setLevel(logging.INFO)
 
 def price_fetcher(event: Dict[str, Any], _: Any) -> None:
     """
+    Fetches gasoline price from public API
+    Calculate the most recent gasoline price with the last record saved in the dynamoDB table
+    if the price has dropped, it inserts that record into the table otherwise, it skips it.
     """
     items = query(GASOLINE_PRICE_TABLE_NAME)
     LOG.info(f"Got items: {items}")
@@ -54,6 +57,7 @@ def price_fetcher(event: Dict[str, Any], _: Any) -> None:
 
 def price_publisher(event: Dict[str, Any], _: Any) -> None:
     """
+    Get dynamo DB events and send information to the user.
     """
     LOG.info(f'Got event {event}')
     record = event['Records'][0]
